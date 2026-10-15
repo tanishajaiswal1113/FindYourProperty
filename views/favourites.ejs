@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Favourites | FindYourProperty</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+<nav class="navbar bg-white shadow-sm py-3">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">
+            <i class="bi bi-house-heart"></i>
+            FindYourProperty
+        </a>
+
+        <a href="/" class="btn btn-outline-dark">
+            <i class="bi bi-arrow-left"></i> Back to Home
+        </a>
+    </div>
+</nav>
+
+<main class="container py-5">
+
+    <div class="mb-4">
+        <h1 class="fw-bold">
+            <i class="bi bi-heart-fill text-danger"></i>
+            My Favourites
+        </h1>
+
+        <p class="text-muted">
+            All the properties you love, in one place.
+        </p>
+    </div>
+
+    <div id="favourites-container" class="row g-4"></div>
+
+    <div id="empty-message" class="text-center py-5 bg-light rounded-4">
+        <i class="bi bi-heart display-1 text-danger"></i>
+
+        <h3 class="mt-3">No favourites yet</h3>
+
+        <p class="text-muted">
+            Explore properties and save the ones you love.
+        </p>
+
+        <a href="/" class="btn btn-dark mt-2">
+            <i class="bi bi-search"></i>
+            Explore Properties
+        </a>
+    </div>
+
+</main>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const container = document.getElementById("favourites-container");
+    const emptyMessage = document.getElementById("empty-message");
+
+    let favourites = [];
+
+    try {
+        favourites = JSON.parse(localStorage.getItem("favourites") || "[]");
+    } catch (error) {
+        favourites = [];
+    }
+
+    function renderFavourites() {
+
+        container.replaceChildren();
+
+        emptyMessage.style.display =
+            favourites.length === 0 ? "block" : "none";
+
+        favourites.forEach(function (property) {
+
+            const column = document.createElement("div");
+            column.className = "col-md-6 col-lg-4";
+
+            const card = document.createElement("div");
+            card.className = "property-card h-100";
+
+            const imageWrapper = document.createElement("div");
+            imageWrapper.className = "property-image";
+
+            const image = document.createElement("img");
+            image.src = property.image || "";
+            image.alt = property.title || "Property";
+
+            image.onerror = function () {
+                this.onerror = null;
+                this.src = "https://placehold.co/600x400?text=Property+Image";
+            };
+
+            imageWrapper.appendChild(image);
+
+            const info = document.createElement("div");
+            info.className = "property-info";
+
+            const title = document.createElement("h5");
+            title.textContent = property.title || "Untitled property";
+
+            const location = document.createElement("p");
+            location.className = "property-location";
+            location.textContent = property.location || "Location unavailable";
+
+            const price = document.createElement("h4");
+            price.className = "property-price";
+
+            const numericPrice = Number(property.price);
+            price.textContent = Number.isFinite(numericPrice)
+                ? "₹" + (numericPrice / 100000).toLocaleString("en-IN") + " Lakh"
+                : "Price unavailable";
+
+            const detailsLink = document.createElement("a");
+            detailsLink.href = "/properties/" + encodeURIComponent(property.id);
+            detailsLink.className = "btn btn-outline-dark w-100 mt-3";
+            detailsLink.textContent = "View Details";
+
+            const removeButton = document.createElement("button");
+            removeButton.type = "button";
+            removeButton.className = "btn btn-outline-danger w-100 mt-2";
+            removeButton.innerHTML = '<i class="bi bi-heart-fill"></i> Remove Favourite';
+
+            removeButton.addEventListener("click", function () {
+                favourites = favourites.filter(function (item) {
+                    return item.id !== property.id;
+                });
+
+                localStorage.setItem("favourites", JSON.stringify(favourites));
+                renderFavourites();
+            });
+
+            info.append(title, location, price, detailsLink, removeButton);
+            card.append(imageWrapper, info);
+            column.appendChild(card);
+            container.appendChild(column);
+        });
+    }
+
+    renderFavourites();
+});
+</script>
+
+</body>
+</html>
